@@ -59,17 +59,50 @@ public class Simulation extends Canvas implements Runnable {
     @Override
     public void run() {
         // 
+        /* old working
         final double delta = 1 / Globals.FPS;
-        double nextTime = (double)System.nanoTime() / 1000000000.0;
+        double nextTime = (double)System.nanoTime() / 1000000000.0;*/
+            
+        /* new try */
+        long lastTime = System.nanoTime();
+        double FPS = 60.0;
+        final double ns = 1000000000 / FPS;
+        double delta = 0;
+        long timer = System.currentTimeMillis();
+        int updates = 0;
+        int frames = 0;
         
         while(running) {
             
+            /* new try*/
+            long now = System.nanoTime();
+            delta += (now -lastTime) / ns;
+            lastTime = now;
+            while(delta >= 1) {
+                update();
+                updates++;
+                delta--;
+            }
+            render();
+            frames++;
+            
+            if(System.currentTimeMillis() - timer > 1000) {
+                timer += 1000;
+                System.out.println("FPS: " + frames);
+                System.out.println("updates: " + updates);
+                frames = 0;
+                updates = 0;
+            }
+            
+            /* old working
             double now = (double)System.nanoTime() / 1000000000.0;
             
             if(now >= nextTime) {
                 nextTime += delta;
                 update();
-                render();
+                if( now < nextTime) {
+                    render();  
+                }
             } else {
                 // calculate sleep time
                 int sleepTime = (int)(1000.0 * (nextTime - now));
@@ -81,16 +114,16 @@ public class Simulation extends Canvas implements Runnable {
                         e.printStackTrace();
                     }
                 }
-            }
+            } */
         }
     }
     
     private void update() {
-        System.out.println("update");
+       // System.out.println("update");
     }
     
     private void render() {
-        System.out.println("render");
+        //System.out.println("render");
         BufferStrategy bs = getBufferStrategy();
         if(bs == null) {
             createBufferStrategy(3);

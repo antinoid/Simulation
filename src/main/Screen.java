@@ -35,6 +35,11 @@ public class Screen {
                 pixels[x + y * width] = 0xA37E37;
             }
         }*/
-        pixels[time + time * width] = 0x00FF00;
+        pixels[222 * height + counter] = 0xFFFF00;
+        pixels[223 * height + counter] = 0xFFFF00;
+        pixels[224 * height + counter] = 0xFFFF00;
+        pixels[225 * height + counter] = 0xFFFF00;
+        pixels[226 * height + counter] = 0xFFFF00;
+        pixels[227 * height + counter] = 0xFFFF00;
     }
 }
