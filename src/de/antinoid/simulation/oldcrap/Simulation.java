@@ -1,4 +1,4 @@
-package main;
+package de.antinoid.simulation.oldcrap;
 
 import java.awt.Canvas;
 import java.awt.Color;
@@ -24,6 +24,11 @@ public class Simulation extends Canvas implements Runnable {
     
     private Screen screen;
     
+    static {
+        //System.setProperty("sun.java2d.trace", "timestamp,log,count");
+        //System.setProperty("sun.java2d.opengl", "True");
+        //System.setProperty("sun.java2d.d3d", "True"); //default on windows
+    }
     
     public Simulation() {
         Dimension dim = new Dimension(Globals.WIDTH, Globals.HEIGHT);
@@ -56,17 +61,52 @@ public class Simulation extends Canvas implements Runnable {
         running = false;
     }
     
-    @Override
-    public void run() {
-        // 
-        /* old working
-        final double delta = 1 / Globals.FPS;
-        double nextTime = (double)System.nanoTime() / 1000000000.0;*/
+    // old working
+    private void loop1(final double delta) {
+        
+        double nextTime = (double)System.nanoTime() / 1000000000.0;
+        int updates = 0;
+        int frames = 0;
+        long timer = System.currentTimeMillis();
+        
+        while(running) {
+            double now = (double)System.nanoTime() / 1000000000.0;
             
-        /* new try */
+            if(now >= nextTime) {
+                nextTime += delta;
+                update();
+                updates++;
+                if( now < nextTime) {
+                    render();
+                    frames++;
+                }
+            } else {
+                // calculate sleep time
+                int sleepTime = (int)(1000.0 * (nextTime - now));
+                
+                if(sleepTime > 0) {
+                    try {
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            if(System.currentTimeMillis() - timer > 1000) {
+                timer += 1000;
+                System.out.println("Updates: " + updates);
+                System.out.println("Frames: " + frames);
+                updates = 0;
+                frames = 0;
+            }
+        }
+    }
+    
+    // new try
+    // unstable shit :/
+    public void loop2(final double fps) {        
         long lastTime = System.nanoTime();
-        double FPS = 60.0;
-        final double ns = 1000000000 / FPS;
+        final double ns = 1000000000 / fps;
         double delta = 0;
         long timer = System.currentTimeMillis();
         int updates = 0;
@@ -74,7 +114,6 @@ public class Simulation extends Canvas implements Runnable {
         
         while(running) {
             
-            /* new try*/
             long now = System.nanoTime();
             delta += (now -lastTime) / ns;
             lastTime = now;
@@ -93,33 +132,23 @@ public class Simulation extends Canvas implements Runnable {
                 frames = 0;
                 updates = 0;
             }
-            
-            /* old working
-            double now = (double)System.nanoTime() / 1000000000.0;
-            
-            if(now >= nextTime) {
-                nextTime += delta;
-                update();
-                if( now < nextTime) {
-                    render();  
-                }
-            } else {
-                // calculate sleep time
-                int sleepTime = (int)(1000.0 * (nextTime - now));
-                
-                if(sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } */
         }
+    }
+    
+    @Override
+    public void run() {
+        loop1(1 / Globals.FPS);
+        //loop2(Globals.FPS);
     }
     
     private void update() {
        // System.out.println("update");
+       // update stress test
+        if(Math.random() < 0.0) {
+            for(int i = 0; i < 100000; i++) {
+                Math.cos(Math.cos(Math.cos(i * Math.sqrt(i))));
+            }
+        }
     }
     
     private void render() {
@@ -133,9 +162,7 @@ public class Simulation extends Canvas implements Runnable {
         screen.clear();
         screen.render();
         
-        for(int i = 0; i < pixels.length; i++) {
-            pixels[i] = screen.pixels[i];
-        }
+        System.arraycopy(screen.pixels, 0, pixels, 0, pixels.length);
         
         Graphics g = bs.getDrawGraphics();
         
